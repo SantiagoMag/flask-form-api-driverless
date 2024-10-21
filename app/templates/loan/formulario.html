@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}Formulario de Préstamo{% endblock %}
+
+{% block content %}
+    <h1>Formulario de Préstamo</h1>
+    
+    {% if general_error %}
+        <div class="alert alert-danger">{{ general_error }}</div>
+    {% endif %}
+
+    <form id="loan_form" action="" method="POST">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.nombre.label }} {{ form.nombre(class="form-control", size=32) }}
+        </div>
+        <div class="form-group">
+            {{ form.notas.label }} {{ form.notas(class="form-control", rows=3) }}
+        </div>
+        <div class="form-group">
+            {{ form.edad.label }} {{ form.edad(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.ingreso_anual.label }} {{ form.ingreso_anual(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.propiedad_vivienda.label }} {{ form.propiedad_vivienda(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.anos_empleo.label }} {{ form.anos_empleo(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.proposito_prestamo.label }} {{ form.proposito_prestamo(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.calificacion_prestamo.label }} {{ form.calificacion_prestamo(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.monto_prestamo.label }} {{ form.monto_prestamo(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.tasa_interes.label }} {{ form.tasa_interes(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.deuda_ingreso.label }} {{ form.deuda_ingreso(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.incumplimiento_anterior.label }} {{ form.incumplimiento_anterior(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.historial_crediticio.label }} {{ form.historial_crediticio(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.estado_deuda.label }} {{ form.estado_deuda(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.prediccion_incumplimiento.label }} {{ form.prediccion_incumplimiento(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.probabilidad_incumplimiento.label }} {{ form.probabilidad_incumplimiento(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.h20_predicciones.label }} {{ form.h20_predicciones(class="form-control", rows=3) }}
+        </div>
+        <div class="form-group">
+            {{ form.h20_prediccion_clase.label }} {{ form.h20_prediccion_clase(class="form-control") }}
+        </div>
+        <br>
+
+        <button type="submit" class="btn btn-primary" formaction="/submit" name="submit_guardar">Guardar</button>
+        <button type="submit" class="btn btn-secondary" formaction="/predict" name="submit_predecir">Predecir</button>
+    </form>
+{% endblock %}

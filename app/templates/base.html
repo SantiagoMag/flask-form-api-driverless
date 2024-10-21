@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    {% include 'layouts/head.html' %}
+    <title>{% block title %}Mi Aplicación{% endblock %}</title>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+
+    {% block styles %}
+        {{ bootstrap.load_css() }}
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% endblock %}
+</head>
+<body>
+    {% include 'layouts/navbar.html' %}
+    <div class="container mt-4">
+        {% block content %}{% endblock %}
+    </div>
+    {% include 'layouts/footer.html' %}
+    {% block scripts %}
+        {{ bootstrap.load_js() }}
+    {% endblock %}
+</body>
+</html>

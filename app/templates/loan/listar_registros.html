@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Listado de Registros{% endblock %}
+
+{% block content %}
+    <h1>Listado de Registros</h1>
+    <a href="{{ url_for('loan.submit') }}">
+        <button class="btn btn-outline-primary">Agregar Nuevo Registro</button>
+    </a>
+    <br><br>
+    <table class="table mb-0">
+        <thead class="table-light">
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Edad</th>
+                <th>Ingreso Anual</th>
+                <th>Propósito Préstamo</th>
+                <th>Estado</th>
+                <th>Predicción</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for registro in registros %}
+            <tr>
+                <td>{{ registro.id }}</td>
+                <td>{{ registro.nombre }}</td>
+                <td>{{ registro.edad }}</td>
+                <td>{{ registro.ingreso_anual }}</td>
+                <td>{{ registro.proposito_prestamo }}</td>
+                <td>{{ registro.estado_deuda }}</td>
+                <td>{{ registro.h20_predicciones }}</td>
+                <td>
+                    <form action="{{ url_for('loan.predict_id', id=registro.id) }}" method="post">
+                        <button type="submit" class="btn btn-primary">Predicción</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
