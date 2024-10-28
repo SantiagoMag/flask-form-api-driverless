@@ -4,40 +4,117 @@
 
 {% block content %}
     <h1>Listado de Registros</h1>
-    <a href="{{ url_for('loan.submit') }}">
-        <button class="btn btn-outline-primary">Agregar Nuevo Registro</button>
-    </a>
-    <br><br>
-    <table class="table mb-0">
-        <thead class="table-light">
-            <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Edad</th>
-                <th>Ingreso Anual</th>
-                <th>Propósito Préstamo</th>
-                <th>Estado</th>
-                <th>Predicción</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for registro in registros %}
-            <tr>
-                <td>{{ registro.id }}</td>
-                <td>{{ registro.nombre }}</td>
-                <td>{{ registro.edad }}</td>
-                <td>{{ registro.ingreso_anual }}</td>
-                <td>{{ registro.proposito_prestamo }}</td>
-                <td>{{ registro.estado_deuda }}</td>
-                <td>{{ registro.h20_predicciones }}</td>
-                <td>
-                    <form action="{{ url_for('loan.predict_id', id=registro.id) }}" method="post">
-                        <button type="submit" class="btn btn-primary">Predicción</button>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <!-- Contenedor para los botones alineados -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <a href="{{ url_for('loan.submit') }}">
+            <button class="btn btn-outline-primary">Agregar Nuevo Registro</button>
+        </a>
+        <form action="{{ url_for('loan.predict_selected') }}" method="post" id="predict-form">
+            <button type="submit" class="btn btn-success" id="predict-button" disabled>Predecir Seleccionados</button>
+        </form>
+    </div>
+            
+        <table class="table mb-0">
+            <thead class="table-light">
+                <tr><th>
+                    <!-- Botón de "Seleccionar todos" -->
+                    <input type="checkbox" id="select-all">
+                </th>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Edad</th>
+                    <th>Ingreso Anual</th>
+                    <th>Calificación</th>
+                    <th>Monto Préstamo</th>
+                    <th>Tasa Interés</th>
+                    <th>Antecedente de Incumplimiento</th>
+                    <th>Estado</th>
+                    <th>Predicción</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for registro in registros %}
+                <tr>
+                    <td><input type="checkbox" name="selected_ids" value="{{ registro.id }}" class="record-checkbox"></td>
+
+                    <td>{{ registro.id }}</td>
+                    <td>{{ registro.nombre }}</td>
+                    <td>{{ registro.edad }}</td>
+                    <td>{{ registro.ingreso_anual }}</td>
+                    <td>{{ registro.calificacion_prestamo }}</td>
+                    <td>{{ registro.monto_prestamo }}</td>
+                    <td>{{ registro.tasa_interes | round(2) }}</td>
+                    <td>{{ registro.incumplimiento_anterior }}</td>
+                    <td class="{% if registro.estado_deuda == '0' %}text-success{% elif registro.estado_deuda == '1' %}text-danger{% endif %}">
+                        {% if registro.estado_deuda == '0' %}
+                            Cumplimiento
+                        {% elif registro.estado_deuda == '1' %}
+                            Incumplimiento
+                        {% else %} 
+                        {% endif %}
+                    </td>
+                    <td class="{% if registro.h20_prediccion_clase == '0' %}text-success{% elif registro.h20_prediccion_clase == '1' %}text-danger{% endif %}">
+                        {% if registro.h20_prediccion_clase == '0' %}
+                            Cumplimiento
+                        {% elif registro.h20_prediccion_clase == '1' %}
+                            Incumplimiento
+                        {% else %} 
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="form-container">
+                            <form action="{{ url_for('loan.edit', id=registro.id) }}" method="get">
+                                <button type="submit" class="btn btn-warning">Editar</button>
+                            </form>
+                            <form action="{{ url_for('loan.delete_id', id=registro.id) }}" method="post" style="display:inline;">
+                                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    <div class="pagination">
+        {{ pagination.links }}
+    </div>
+
+    <script>
+        // Selección de todos los checkboxes
+        document.getElementById('select-all').addEventListener('change', function () {
+            const checkboxes = document.querySelectorAll('.record-checkbox');
+            checkboxes.forEach(checkbox => checkbox.checked = this.checked);
+            togglePredictButton();
+        });
+
+        // Evento para habilitar o deshabilitar el botón de predicción
+        document.querySelectorAll('.record-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', togglePredictButton);
+        });
+
+        // Función para habilitar/deshabilitar el botón
+        function togglePredictButton() {
+            const anyChecked = Array.from(document.querySelectorAll('.record-checkbox')).some(checkbox => checkbox.checked);
+            document.getElementById('predict-button').disabled = !anyChecked;
+        }
+
+        // Enviar solo los checkboxes seleccionados
+        document.getElementById('predict-form').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            // Obtener y agregar los checkboxes seleccionados al formulario
+            const selectedCheckboxes = document.querySelectorAll('.record-checkbox:checked');
+            selectedCheckboxes.forEach(checkbox => {
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'selected_ids';
+                hiddenInput.value = checkbox.value;
+                this.appendChild(hiddenInput);
+            });
+
+            this.submit();
+        });
+    </script>
 {% endblock %}

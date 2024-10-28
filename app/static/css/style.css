@@ -10,12 +10,18 @@
     margin-bottom: 20px; /* Ajusta el valor según tus preferencias */
 }
 
-form {
+.form-container {
+    display: flex;
+    gap: 10px; /* Espacio entre formularios */
+    align-items: center; /* Alinea verticalmente al centro */
+}
+#config_form, #loan_form {
     background: #fff;
     padding: 10px;
     border-radius: 5px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
 /*
 input {
     margin: 10px 0;

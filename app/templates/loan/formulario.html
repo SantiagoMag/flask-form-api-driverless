@@ -5,6 +5,8 @@
 {% block content %}
     <h1>Formulario de Préstamo</h1>
     
+    <h1>{{ 'Editar' if edit_mode else 'Agregar' }} Préstamo</h1>
+
     {% if general_error %}
         <div class="alert alert-danger">{{ general_error }}</div>
     {% endif %}
@@ -53,21 +55,10 @@
         <div class="form-group">
             {{ form.estado_deuda.label }} {{ form.estado_deuda(class="form-control") }}
         </div>
-        <div class="form-group">
-            {{ form.prediccion_incumplimiento.label }} {{ form.prediccion_incumplimiento(class="form-control") }}
-        </div>
-        <div class="form-group">
-            {{ form.probabilidad_incumplimiento.label }} {{ form.probabilidad_incumplimiento(class="form-control") }}
-        </div>
-        <div class="form-group">
-            {{ form.h20_predicciones.label }} {{ form.h20_predicciones(class="form-control", rows=3) }}
-        </div>
-        <div class="form-group">
-            {{ form.h20_prediccion_clase.label }} {{ form.h20_prediccion_clase(class="form-control") }}
-        </div>
+       
         <br>
 
         <button type="submit" class="btn btn-primary" formaction="/submit" name="submit_guardar">Guardar</button>
-        <button type="submit" class="btn btn-secondary" formaction="/predict" name="submit_predecir">Predecir</button>
+        {#} <button type="submit" class="btn btn-secondary" formaction="/predict" name="submit_predecir">Predecir</button> {#}
     </form>
 {% endblock %}

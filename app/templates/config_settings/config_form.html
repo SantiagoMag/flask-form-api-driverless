@@ -4,7 +4,7 @@
 
 {% block content %}
     <h1>Configuración de ResConfigSettings</h1>
-    <form method="POST">
+    <form  id="config_form" method="POST">
         {{ form.hidden_tag() }}
         <div class="form-group">
             {{ form.h2o_driverless_address.label }}<br>
