@@ -5,13 +5,68 @@
 {% block content %}
     <h1>Listado de Registros</h1>
     <!-- Contenedor para los botones alineados -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <a href="{{ url_for('loan.submit') }}">
-            <button class="btn btn-outline-primary">Agregar Nuevo Registro</button>
-        </a>
-        <form action="{{ url_for('loan.predict_selected') }}" method="post" id="predict-form">
-            <button type="submit" class="btn btn-success" id="predict-button" disabled>Predecir Seleccionados</button>
-        </form>
+        <div class="d-flex">
+
+            <a href="{{ url_for('loan.submit') }}">
+                <button class="btn btn-outline-primary">Agregar Nuevo Registro</button>
+            </a>
+            <p>&nbsp;</p>
+            <form action="{{ url_for('loan.predict_selected') }}" method="post" id="predict-form">
+                <button type="submit" class="btn btn-success" id="predict-button" disabled>Predecir Seleccionados</button>
+            </form>
+        </div>
+
+        <div class="d-flex ">
+            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                <i class="fas fa-upload"></i>
+            </button>
+            <p>&nbsp;</p>
+
+            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAllModal">
+                <i class="fas fa-trash-alt"></i>
+            </button>
+        </div>
+        <!-- Modal de carga masiva -->
+        <div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="uploadModalLabel">Cargar Archivo Masivo</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="{{ url_for('loan.bulk_upload') }}" method="post" enctype="multipart/form-data">
+                            <input type="file" name="file" required>
+                            <button type="submit" class="btn btn-primary">Subir</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de confirmación de eliminación -->
+        <div class="modal fade" id="deleteAllModal" tabindex="-1" aria-labelledby="deleteAllModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteAllModalLabel">Confirmar Eliminación</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        ¿Estás seguro de que deseas eliminar toda la información? Esta acción no se puede deshacer.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <form action="{{ url_for('loan.delete_all') }}" method="post">
+                            <button type="submit" class="btn btn-danger">Eliminar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
             
         <table class="table mb-0">

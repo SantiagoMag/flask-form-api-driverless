@@ -1,3 +1,8 @@
+import numpy as np
+from sqlalchemy.exc import SQLAlchemyError
+
+import os
+from werkzeug.utils import secure_filename
 import pandas as pd
 import driverlessai
 import json
@@ -177,3 +182,72 @@ def predict_id(id):
     else:
         # Esto es para manejar la solicitud GET si es necesario
         return f'Prediction (GET) for loan ID: {id}'
+
+
+@loan_bp.route("/bulk_upload", methods=["POST"])
+def bulk_upload():
+    # Verificar si el archivo fue enviado en la solicitud
+    if 'file' not in request.files:
+        flash('No se seleccionó ningún archivo', 'warning')
+        return redirect(url_for('loan.index'))
+
+    file = request.files['file']
+    if file.filename == '':
+        flash('Archivo no válido', 'warning')
+        return redirect(url_for('loan.index'))
+
+    if file:
+        filename = secure_filename(file.filename)
+        os.makedirs('uploads', exist_ok=True)
+        file_path = os.path.join('uploads', filename)
+        file.save(file_path)
+        try:
+            df = pd.read_csv(file_path,sep=",")
+
+            replace_columns={
+                    'name'                          :'nombre',  
+                    "person_age"                    :'edad',
+                    "person_income"                 :"ingreso_anual",
+                    "person_home_ownership"         :"propiedad_vivienda",
+                    "person_emp_length"             :"anos_empleo",
+                    "loan_intent"                   :"proposito_prestamo",
+                    "loan_grade"                    :"calificacion_prestamo",
+                    "loan_amnt"                     :"monto_prestamo",
+                    "loan_int_rate"                 :"tasa_interes",
+                    "loan_status"                   :"estado_deuda",
+                    "loan_percent_income"           :"deuda_ingreso",
+                    "cb_person_default_on_file"     :"incumplimiento_anterior",
+                    "cb_person_cred_hist_length"    :"historial_crediticio"
+            }
+            
+            df = df.rename(columns=replace_columns, errors="raise")
+            df = df.replace(np.nan, None)
+            records = df.to_dict(orient='records')
+
+            print("----------------------------------------",flush=True)
+            db.session.bulk_insert_mappings(Loan, records)
+            db.session.commit()
+
+            flash("Carga masiva completada exitosamente.", "success")
+            print("-3", flush=True)
+            
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            flash(f"Error en la transacción: {str(e)}", "danger")
+            print(f"Detalle del error: {e}")
+            return redirect(url_for('loan.index'))
+        return redirect(url_for('loan.index'))
+
+
+
+@loan_bp.route('/delete_all', methods=['POST'])
+def delete_all():
+    try:
+        # Borra todos los registros de la tabla Loan
+        Loan.query.delete()
+        db.session.commit()
+        flash("Toda la información ha sido eliminada correctamente.", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash("Error al eliminar la información: {}".format(e), "danger")
+    return redirect(url_for('loan.index'))
