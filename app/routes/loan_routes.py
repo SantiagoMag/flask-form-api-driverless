@@ -1,21 +1,24 @@
-import numpy as np
-from sqlalchemy.exc import SQLAlchemyError
-
+# Librerías estándar de Python
 import os
-from werkzeug.utils import secure_filename
-import pandas as pd
-import driverlessai
 import json
-import requests
-from flask import request, jsonify
-from flask import Blueprint, render_template
-from app.models.loan import Loan
-from app.forms.loan_form import LoanForm
-from app import db
-from flask import Flask, render_template, request, redirect, url_for, jsonify, flash
-from app.models.config_settings import ResConfigSettings
+import urllib.request
+import urllib.error
+
+# Librerías de terceros
+import numpy as np
+import pandas as pd
 from sqlalchemy import desc
+from sqlalchemy.exc import SQLAlchemyError
+from werkzeug.utils import secure_filename
+from flask import Flask, render_template, request, redirect, url_for, jsonify, flash
+from flask import Blueprint
 from flask_paginate import Pagination, get_page_parameter
+
+# Importaciones específicas del proyecto
+from app import db
+from app.models.loan import Loan
+from app.models.config_settings import ResConfigSettings
+from app.forms.loan_form import LoanForm
 
 loan_bp = Blueprint('loan', __name__)
 
@@ -91,97 +94,55 @@ def predict_selected():
         flash("No seleccionaste ningún registro.", "warning")
         return redirect(url_for('loan.index'))
     
-    # Consultar los registros seleccionados
     registros = Loan.query.filter(Loan.id.in_(selected_ids)).all()
-        # Crear un diccionario con los datos necesarios para el DataFrame
-    data = {
-            'person_age': [registro.edad for registro in registros],
-            'person_income': [registro.ingreso_anual for registro in registros],
-            'person_home_ownership': [registro.propiedad_vivienda for registro in registros],
-            'person_emp_length': [registro.anos_empleo for registro in registros],
-            'loan_intent': [registro.proposito_prestamo for registro in registros],
-            'loan_grade': [registro.calificacion_prestamo for registro in registros],
-            'loan_amnt': [registro.monto_prestamo for registro in registros],
-            'loan_int_rate': [registro.tasa_interes for registro in registros],
-            'loan_percent_income': [registro.deuda_ingreso for registro in registros],
-            'cb_person_default_on_file': [registro.incumplimiento_anterior for registro in registros],
-            'cb_person_cred_hist_length': [registro.historial_crediticio for registro in registros] ,
-            'name': [registro.nombre for registro in registros],
-    }
-    
-    # Convertir el diccionario en un DataFrame
-    df = pd.DataFrame(data)
-    
-    print(df,flush=False)
-    print(len(df),flush=False)
-    
-    return jsonify({'message': 'PREDICT!'}), 201
 
-@loan_bp.route('/predict/<int:id>', methods=['POST', 'GET'])
-def predict_id(id):
-    if request.method == 'POST':
-        # Lógica para manejar la predicción usando el ID
-
-        registro = Loan.query.get_or_404(id)
-
-        data = {
-            'person_age': [registro.edad],
-            'person_income': [registro.ingreso_anual],
-            'person_home_ownership': [registro.propiedad_vivienda],
-            'person_emp_length': [registro.anos_empleo],
-            'loan_intent': [registro.proposito_prestamo],
-            'loan_grade': [registro.calificacion_prestamo],
-            'loan_amnt': [registro.monto_prestamo],
-            'loan_int_rate': [registro.tasa_interes],
-            'loan_percent_income': [registro.deuda_ingreso],
-            'cb_person_default_on_file': [registro.incumplimiento_anterior],
-            'cb_person_cred_hist_length': [registro.historial_crediticio],
-            'name': [registro.nombre],
+    example = {}
+    data = []
+    for registro in registros:
+        val = {
+            'person_age': registro.edad,
+            'person_income': registro.ingreso_anual,
+            'person_home_ownership': registro.propiedad_vivienda,
+            'person_emp_length': registro.anos_empleo,
+            'loan_intent': registro.proposito_prestamo,
+            'loan_grade': registro.calificacion_prestamo,
+            'loan_amnt': registro.monto_prestamo,
+            'loan_int_rate': registro.tasa_interes,
+            'loan_percent_income': registro.deuda_ingreso,
+            'cb_person_default_on_file': registro.incumplimiento_anterior,
+            'cb_person_cred_hist_length': registro.historial_crediticio,
+            'name': registro.nombre,
         }
-        df = pd.DataFrame(data)
+        data.append(val)
         
-        settings = ResConfigSettings.query.first()
+    example["Inputs"] = {}
+    example["Inputs"]["data"] = data
+    example["GlobalParameters"] = {}
+    example["GlobalParameters"]["method"] = "predict"
         
-        ADDRESS=settings.h2o_driverless_address
-        USERNAME=settings.h2o_driverless_username 
-        PASSWORD=settings.h2o_driverless_password 
-        NAME_EXPERIMENT = settings.h2o_driverless_name_experiment 
+    settings = ResConfigSettings.query.first()
+    URL=settings.api_vm_url
+
+    body = str.encode(json.dumps(example))
+    headers = {'Content-Type':'application/json'}
+    req = urllib.request.Request(URL, body, headers)
+
+    try:
+        response = urllib.request.urlopen(req)
+
+        result = response.read()
+        results = json.loads(result.decode('utf-8'))
+
+        for enum,registro in enumerate(registros):
+            registro.h20_prediccion_clase = results["Results"][enum]
         
-        try:
-            client = driverlessai.Client(address=ADDRESS, 
-                                         username=USERNAME, 
-                                         password=PASSWORD, 
-                                         verify=False)
-            experiment = client.experiments.get_by_name(NAME_EXPERIMENT)
-            prediction = experiment.predict(df).to_pandas()
-            predictions = prediction.to_json(orient='records')
-            
-            
-            val_max = 0
-            class_max = ""
-            predictions = json.loads(predictions)
-
-            for k,v in predictions[0].items() :
-                if v > val_max :
-                    val_max = v
-                    class_max = k[-1]
-
-
-            registro.h20_predicciones  = str(predictions)
-            registro.h20_prediccion_clase  = str(class_max)
-            registro.probabilidad_incumplimiento  = float(val_max)
-            
-            
-            db.session.commit()  
-            return redirect(url_for('loan.index'))
-
-        except Exception as e:
-            return jsonify({"mensaje": "Error en la predicción", "error": str(e)}), 500
-
-
-    else:
-        # Esto es para manejar la solicitud GET si es necesario
-        return f'Prediction (GET) for loan ID: {id}'
+        db.session.commit()  
+        return redirect(url_for('loan.index'))
+        
+    except urllib.error.HTTPError as error:
+        print("The request failed with status code: " + str(error.code), flush=True)
+        print(error.info(), flush=True)
+        print(error.read().decode("utf8", 'ignore'), flush=True)
 
 
 @loan_bp.route("/bulk_upload", methods=["POST"])

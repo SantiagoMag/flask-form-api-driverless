@@ -7,22 +7,6 @@
     <form  id="config_form" method="POST">
         {{ form.hidden_tag() }}
         <div class="form-group">
-            {{ form.h2o_driverless_address.label }}<br>
-            {{ form.h2o_driverless_address(size=64) }}
-        </div>
-        <div class="form-group">
-            {{ form.h2o_driverless_username.label }}<br>
-            {{ form.h2o_driverless_username(size=64) }}
-        </div>
-        <div class="form-group">
-            {{ form.h2o_driverless_password.label }}<br>
-            {{ form.h2o_driverless_password(size=64) }}
-        </div>
-        <div class="form-group">
-            {{ form.h2o_driverless_name_experiment.label }}<br>
-            {{ form.h2o_driverless_name_experiment(size=64) }}
-        </div>
-        <div class="form-group">
             {{ form.api_vm_url.label }}<br>
             {{ form.api_vm_url(size=64) }}
         </div>

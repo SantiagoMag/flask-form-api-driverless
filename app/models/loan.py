@@ -2,6 +2,10 @@ from app import db
 
 
 class Loan(db.Model):
+    __tablename__ = 'Loan'
+    __table_args__ = {"schema":"azure"}
+    
+    
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(50), nullable=False)
     notas = db.Column(db.Text)

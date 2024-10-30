@@ -99,7 +99,13 @@
                     <td>{{ registro.ingreso_anual }}</td>
                     <td>{{ registro.calificacion_prestamo }}</td>
                     <td>{{ registro.monto_prestamo }}</td>
-                    <td>{{ registro.tasa_interes | round(2) }}</td>
+                    <td>
+                        {% if registro.tasa_interes is not none %}
+                            {{ registro.tasa_interes | round(2) }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
                     <td>{{ registro.incumplimiento_anterior }}</td>
                     <td class="{% if registro.estado_deuda == '0' %}text-success{% elif registro.estado_deuda == '1' %}text-danger{% endif %}">
                         {% if registro.estado_deuda == '0' %}
