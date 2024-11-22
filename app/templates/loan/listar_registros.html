@@ -28,7 +28,16 @@
             <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAllModal">
                 <i class="fas fa-trash-alt"></i>
             </button>
+            <p>&nbsp;</p>
+
+            <a href="{{ url_for('loan.download_csv') }}" >
+                <button type="button" class="btn btn-outline-info">
+                    <i class="fas fa-file-download"></i>
+                </button>
+            </a>
         </div>
+
+
         <!-- Modal de carga masiva -->
         <div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
             <div class="modal-dialog">

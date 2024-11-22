@@ -212,3 +212,52 @@ def delete_all():
         db.session.rollback()
         flash("Error al eliminar la información: {}".format(e), "danger")
     return redirect(url_for('loan.index'))
+
+
+@loan_bp.route('/download_csv', methods=['GET'])
+def download_csv():
+    # Recupera registros de la tabla Loan
+    registros = db.session.query(Loan).all()
+    import io
+    import csv
+    from flask import Blueprint, Response
+
+    # Crea un archivo CSV en memoria
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    # Agrega encabezados (ajusta según las columnas de tu tabla)
+    writer.writerow([
+        'id', 'nombre', 'notas', 'edad', 'ingreso_anual', 'propiedad_vivienda', 
+        'anos_empleo', 'proposito_prestamo', 'calificacion_prestamo',
+        'monto_prestamo', 'tasa_interes', 'deuda_ingreso', 'incumplimiento_anterior', 
+        'historial_crediticio', 'estado_deuda', 'prediccion_incumplimiento',
+        'probabilidad_incumplimiento', 'h20_predicciones', 'h20_prediccion_clase'
+    ])
+
+    # Escribe los datos de cada registro
+    for registro in registros:
+        writer.writerow([
+            registro.id, registro.nombre, registro.notas, registro.edad, 
+            registro.ingreso_anual, registro.propiedad_vivienda, registro.anos_empleo, 
+            registro.proposito_prestamo, registro.calificacion_prestamo, 
+            registro.monto_prestamo, registro.tasa_interes, registro.deuda_ingreso, 
+            registro.incumplimiento_anterior, registro.historial_crediticio, 
+            registro.estado_deuda, registro.prediccion_incumplimiento, 
+            registro.probabilidad_incumplimiento, registro.h20_predicciones, 
+            registro.h20_prediccion_clase
+        ])
+
+    # Obtén el contenido del archivo CSV
+    output.seek(0)
+    csv_content = output.getvalue()
+    output.close()
+
+    # Devuelve el CSV como una respuesta descargable
+    return Response(
+        csv_content,
+        mimetype='text/csv',
+        headers={
+            'Content-Disposition': 'attachment;filename=registros.csv'
+        }
+    )
