@@ -3,7 +3,7 @@ from app import db
 
 class Loan(db.Model):
     __tablename__ = 'Loan'
-    __table_args__ = {"schema":"azure"}
+    __table_args__ = {"schema":"anl"}
     
     
     id = db.Column(db.Integer, primary_key=True)

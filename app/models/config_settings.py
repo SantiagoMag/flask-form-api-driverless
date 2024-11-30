@@ -4,7 +4,7 @@ from app import db
 
 class ResConfigSettings(db.Model):
     __tablename__ = 'ResConfigSettings'
-    __table_args__ = {"schema":"azure"}
+    __table_args__ = {"schema":"anl"}
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     """
